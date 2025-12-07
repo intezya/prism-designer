@@ -1,0 +1,5 @@
+{
+  "name": "Prism AI - Abstract 3D Designer",
+  "description": "An interactive 3D generative art studio using React Three Fiber. Users can manipulate geometry, materials, and lighting manually or use Gemini 2.5 Flash to generate cohesive aesthetic themes and color palettes based on natural language prompts.",
+  "requestFramePermissions": []
+}
