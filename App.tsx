@@ -104,14 +104,6 @@ const App: React.FC = () => {
         <ControlPanel config={config} setConfig={setConfig} />
       </div>
 
-      {/* Overlay Title */}
-      <div className={`absolute top-6 left-6 z-20 pointer-events-none transition-opacity duration-300 ${isSidebarOpen ? 'opacity-0 md:opacity-100' : 'opacity-100'}`}>
-         <div className="bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/5 inline-flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span className="text-xs font-medium text-white/70">Scroll to Explore</span>
-         </div>
-      </div>
-
     </div>
   );
 };

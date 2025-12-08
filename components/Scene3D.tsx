@@ -17,12 +17,12 @@ const AnimatedMesh: React.FC<{ config: SceneConfig; scrollProgress: React.Mutabl
   useFrame((state, delta) => {
     if (meshRef.current) {
       const targetScroll = scrollProgress.current;
-      
+
       // Smoother damping (lower lambda = more weight/inertia)
       // Reduced from 4 to 2.5 to make transitions feel heavier and smoother
-      smoothedScroll.current = THREE.MathUtils.damp(smoothedScroll.current, targetScroll, 2.5, delta);
+      smoothedScroll.current = THREE.MathUtils.damp(smoothedScroll.current, targetScroll, 1.5, delta);
       const p = smoothedScroll.current;
-      
+
       // Calculate velocity for subtle tilt (dampened)
       const velocity = (targetScroll - p);
 
@@ -30,20 +30,20 @@ const AnimatedMesh: React.FC<{ config: SceneConfig; scrollProgress: React.Mutabl
       // Previously accumulative (+=) which caused spinning out of control.
       // Now using absolute calculation: Time (constant spin) + Scroll (interactive spin).
       const time = state.clock.getElapsedTime();
-      
+
       // Base rotation from time
       const baseRotX = time * config.rotationSpeed * 0.2;
       const baseRotY = time * config.rotationSpeed;
-      
+
       // Scroll-based rotation (Mapped directly to scroll position)
       // 1 full scroll = 2 full rotations (4PI)
-      const scrollRotY = p * Math.PI * 4; 
-      
+      const scrollRotY = p * Math.PI * 4;
+
       meshRef.current.rotation.x = baseRotX;
       meshRef.current.rotation.y = baseRotY + scrollRotY;
 
       // Dynamic tilt (Reduced intensity to stop "jumping")
-      meshRef.current.rotation.z = -velocity * 0.5; 
+      meshRef.current.rotation.z = -velocity * 0.5;
 
       // 2. Scale Logic - FIXED
       // Removed velocity-based scale pulsing which looked like bouncing
@@ -53,38 +53,25 @@ const AnimatedMesh: React.FC<{ config: SceneConfig; scrollProgress: React.Mutabl
       // Page 1 (0.0): Right side [3, 0, 0]
       // Page 2 (0.5): Left side [-3, 0, 0]
       // Page 3 (1.0): Center [0, 0, 0]
-      
-      let x = 3;
-      let y = 0;
-      let z = 0;
 
-      if (p <= 0.5) {
-        // Transition 1 -> 2 (Right to Left)
-        const t = p * 2; // 0 to 1
-        
-        x = THREE.MathUtils.lerp(3, -3, t);
-        
-        // Arc out towards camera
-        z = Math.sin(t * Math.PI) * 2; 
-        
-        // Gentle wave on Y
-        y = Math.cos(t * Math.PI * 2) * 0.5 - 0.5;
-      } else {
-        // Transition 2 -> 3 (Left to Center)
-        const t = (p - 0.5) * 2; // 0 to 1
-        
-        x = THREE.MathUtils.lerp(-3, 0, t);
-        
-        // Arc
-        z = Math.sin(t * Math.PI) * 1.5;
-        
-        // Gentle wave
-        y = Math.cos(t * Math.PI) * 0.5 - 0.5;
-      }
+      const positions = [
+        new THREE.Vector3(2.5, -0.5, 0),
+        new THREE.Vector3(-2.5, -0.5, 0),
+        new THREE.Vector3(0, -0.5, 0)
+      ];
 
-      meshRef.current.position.set(x, y, z);
-    }
-  });
+      const curve = new THREE.CatmullRomCurve3(positions, false, 'catmullrom', 0.5);
+      const point = curve.getPointAt(p);
+
+      const wave = Math.sin(p * Math.PI * 4) * 0.3;
+      const arc = Math.sin(p * Math.PI) * 1.5;
+
+      meshRef.current.position.set(
+          point.x,
+          point.y + wave,
+          arc
+      );
+  }});
 
   const getGeometry = () => {
     switch (config.shape) {
